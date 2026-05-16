@@ -76,8 +76,10 @@ const start = () => {
         else log_queue.enqueue(1);
     }
 
+    player_img.state = player_img.stance;
     isPlayerRight = false;
     gameStarted = true;
+
 }
 
 // Main update method
