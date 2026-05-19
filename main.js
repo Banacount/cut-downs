@@ -58,8 +58,10 @@ let player_rect = new Rect(0, 0, 120, 100);
 let isPlayerRight = false;
 
 // Menu state
-const playBtnRect = new Rect(20, 500, 320, 80);
+const playBtnRect = new Rect(20, 350, 320, 80);
 const playBtn = new Button(playBtnRect, "PLAY");
+const difficultyBtnRect = new Rect(20, 480, 320, 80);
+const difficultyBtn = new Button(difficultyBtnRect, "EASY");
 
 // Functions
 const defeat = () => {
@@ -88,6 +90,7 @@ const update = (dt) => {
 
     if (!gameStarted) {
         playBtnRect.x = (screenWidth - playBtnRect.width) / 2;
+        difficultyBtnRect.x = (screenWidth - playBtnRect.width) / 2;
     }
 
     if (pointer_down && !initial_down) {
@@ -172,7 +175,8 @@ const draw = (dt) => {
             //ctx.fillRect(logCenterX, logBottomY, log_rect.width, log_rect.height);
 
             if (log_queue.list[i] == 1){
-                ctx.drawImage(trees_img.branch, logCenterX+20, logBottomY, 143.6, 79.2); ctx.drawImage(trees_img.treeType1, logCenterX, logBottomY, log_rect.width, log_rect.height);
+                ctx.drawImage(trees_img.branch, logCenterX+20, logBottomY, 143.6, 79.2);
+                ctx.drawImage(trees_img.treeType1, logCenterX, logBottomY, log_rect.width, log_rect.height);
             }
             else {
                 ctx.save();
@@ -210,16 +214,24 @@ const draw = (dt) => {
     else {
         // Render play button
         playBtn.display(ctx);
+        difficultyBtn.display(ctx);
+
+        // Difficulty text
+        ctx.fillStyle = "black";
+        ctx.font = "bold 25px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Difficulty:", (screenWidth/2)-100, 465);
 
         // Score display
         ctx.fillStyle = "black";
         ctx.font = "bold 50px Arial";
         ctx.textAlign = "center";
 
-        ctx.fillText(`Score: ${score}`, screenWidth/2, 400);
+        ctx.fillText(`Score: ${score}`, (screenWidth/2), 200);
 
+        // Status display
         ctx.fillStyle = "red";
-        ctx.font = "bold 50px Arial";
+        ctx.font = "bold 30px Arial";
         ctx.textAlign = "center";
 
         ctx.fillText(failed_status, screenWidth/2, 700);
