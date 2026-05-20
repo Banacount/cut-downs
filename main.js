@@ -46,8 +46,8 @@ const diffTimes = [
     ['DANG EASY', 1, 125],
     ['EASY', 0.7, 70],
     ['MEDIUM', 0.5, 100],
-    ['HARD', 0.2, 70],
-    ['ROCKSTAR', 0.1, 120],
+    ['HARD', 0.25, 70],
+    ['ROCKSTAR', 0.15, 120],
 ];
 let diff_time_index = 1; 
 let job_delay_time = diffTimes[diff_time_index][1];
