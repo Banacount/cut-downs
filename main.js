@@ -59,6 +59,7 @@ let screenWidth = 500, screenHeight = 500;
 let mouseX = 0, mouseY = 0;
 let pointer_down = false;
 let initial_down = false;
+let arr_right_rep = false, arr_left_rep = false;
 
 // General variables
 let p_x = 0, p_y = 0;
@@ -137,15 +138,27 @@ const update = (dt) => {
 
         // When click happens after gameStarted
         player_img.state = player_img.stance;
-        if (p_x > screenCenterX || arr_right_rep){
+        if (p_x > screenCenterX && !(arr_left_rep || arr_right_rep)){
             isPlayerRight = true;
             atk_offset = 12;
             tree_offset = 50;
-        } else {
+        } else if (p_x < screenCenterX && !(arr_left_rep || arr_right_rep)) {
             isPlayerRight = false;
             atk_offset = 12;
             tree_offset = 50;
         }
+
+        // Keyboard control
+        if (arr_right_rep){
+            isPlayerRight = true;
+            atk_offset = 12;
+            tree_offset = 50;
+        } else if (arr_left_rep) {
+            isPlayerRight = false;
+            atk_offset = 12;
+            tree_offset = 50;
+        }
+
         log_queue.enqueue(Math.floor(Math.random() * 2));
         log_queue.dequeue();
         
@@ -186,6 +199,8 @@ const update = (dt) => {
 
     if (!pointer_down) {
         initial_down = false;
+        arr_right_rep = false;
+        arr_left_rep = false;
     }
 
     // Slide anim after atk
@@ -329,7 +344,6 @@ canvas.addEventListener("pointermove", (e) => {
     mouseX = e.clientX, mouseY = e.clientY;
 });
 // keyboard control
-/*
 document.addEventListener('keydown', (e) => {
     if (!control_enabled) return;
     else if (e.key == 'ArrowLeft') {
@@ -339,9 +353,6 @@ document.addEventListener('keydown', (e) => {
         arr_right_rep = true;
     }
 });
-*/
-
-document.addEventListener('keydown', (e) => {
 
 // Resize screen
 const resizeCanvas = () => {
