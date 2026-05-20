@@ -20,6 +20,7 @@ const trees_img = {
     'treeType1': new Image(),
     'treeType2': new Image(),
     'branch': new Image(),
+    'leaves': new Image(),
 }
 
 player_img.stance.src = "./stance-player.png";
@@ -28,6 +29,7 @@ player_img.state = player_img.stance;
 trees_img.treeType1.src = "./wood-1.png";
 trees_img.treeType2.src = "./wood-2.png";
 trees_img.branch.src = "./branch.png";
+trees_img.leaves.src = "./tree-leaves.png";
 
 // Game properties
 let log_queue = new Queue();
@@ -99,6 +101,7 @@ const start = () => {
 
 // Main update method
 let atk_offset = 0;
+let tree_offset = 0;
 const update = (dt) => {
     time_elapsed += dt;
 
@@ -107,7 +110,7 @@ const update = (dt) => {
         difficultyBtnRect.x = (screenWidth - playBtnRect.width) / 2;
     }
 
-    if (pointer_down && !initial_down) {
+    if ((pointer_down && !initial_down) || (arr_right_rep || arr_left_rep)) {
         // Put one touched events here
         initial_down = true;
         
@@ -134,12 +137,14 @@ const update = (dt) => {
 
         // When click happens after gameStarted
         player_img.state = player_img.stance;
-        if (p_x > screenCenterX){
+        if (p_x > screenCenterX || arr_right_rep){
             isPlayerRight = true;
             atk_offset = 12;
+            tree_offset = 50;
         } else {
             isPlayerRight = false;
             atk_offset = 12;
+            tree_offset = 50;
         }
         log_queue.enqueue(Math.floor(Math.random() * 2));
         log_queue.dequeue();
@@ -188,6 +193,9 @@ const update = (dt) => {
         atk_offset -= (dt * 100);
     } else if (firstClick && job_delay > 0) {
         player_img.state = player_img.swing;
+    }
+    if (tree_offset > 0){
+        tree_offset -= (dt * 60);
     }
 }
 
@@ -247,6 +255,12 @@ const draw = (dt) => {
             ctx.drawImage(player_img.state, -player_rect.x - player_rect.width, player_rect.y, player_rect.width, player_rect.height);
             ctx.restore();
         }
+
+        // Draw Tree
+        ctx.drawImage(trees_img.leaves, ((screenWidth - 884 * 0.8) / 2), 
+                                        (screenHeight - 900) + tree_offset, 
+                                        884 * 0.8, 
+                                        489 * 0.8);
     } 
     // Game Menu
     else {
@@ -270,7 +284,7 @@ const draw = (dt) => {
 
         // Status display
         ctx.fillStyle = "red";
-        ctx.font = `bold ${screenWidth * 0.03}px Arial`;
+        ctx.font = `bold ${Math.min(screenWidth * 0.06, 40)}px Arial`;
         ctx.textAlign = "center";
 
         ctx.fillText(failed_status, screenWidth/2, 100);
@@ -314,6 +328,20 @@ canvas.addEventListener("pointerup", (e) => {
 canvas.addEventListener("pointermove", (e) => {
     mouseX = e.clientX, mouseY = e.clientY;
 });
+// keyboard control
+/*
+document.addEventListener('keydown', (e) => {
+    if (!control_enabled) return;
+    else if (e.key == 'ArrowLeft') {
+        arr_left_rep = true;
+    }
+    else if (e.key == 'ArrowRight') {
+        arr_right_rep = true;
+    }
+});
+*/
+
+document.addEventListener('keydown', (e) => {
 
 // Resize screen
 const resizeCanvas = () => {
