@@ -34,12 +34,23 @@ let log_queue = new Queue();
 let gameStarted = false;
 let score = 0;
 let control_enabled = false;
+let firstClick = false;
 let failed_status = "";
 
 // Times ( for delays )
 let time_elapsed = 0;
 let start_delay = 3;
 let job_delay = 0.6;
+// Structure [Title, Delay, Offset]
+const diffTimes = [
+    ['DANG EASY', 1, 125],
+    ['EASY', 0.7, 70],
+    ['MEDIUM', 0.5, 100],
+    ['HARD', 0.2, 70],
+    ['ROCKSTAR', 0.1, 120],
+];
+let diff_time_index = 1; 
+let job_delay_time = diffTimes[diff_time_index][1];
 
 // Controls properties
 let screenWidth = 500, screenHeight = 500;
@@ -60,17 +71,19 @@ let isPlayerRight = false;
 // Menu state
 const playBtnRect = new Rect(20, 350, 320, 80);
 const playBtn = new Button(playBtnRect, "PLAY");
-const difficultyBtnRect = new Rect(20, 480, 320, 80);
-const difficultyBtn = new Button(difficultyBtnRect, "EASY");
+const difficultyBtnRect = new Rect(20, 490, 320, 80);
+const difficultyBtn = new Button(difficultyBtnRect, diffTimes[diff_time_index][0]);
 
 // Functions
 const defeat = () => {
     gameStarted = false;
+    control_enabled = false;
+    firstClick = false;
 }
 const start = () => {
     score = 0;
     start_delay = 3;
-    job_delay = 0.6;
+    job_delay = 2;
 
     log_queue.list = [];
     for (let i = 0; i < log_size; i++) {
@@ -85,6 +98,7 @@ const start = () => {
 }
 
 // Main update method
+let atk_offset = 0;
 const update = (dt) => {
     time_elapsed += dt;
 
@@ -97,24 +111,35 @@ const update = (dt) => {
         // Put one touched events here
         initial_down = true;
         
-        // Handle button clicks
+        // Handle button clicks or Menu logics
         if (!gameStarted) {
 
             if (playBtnRect.collidePoint(mouseX, mouseY)) {
                 start();
                 return;
             }
+            if (difficultyBtnRect.collidePoint(mouseX, mouseY)) {
+                if (diff_time_index <= 3) diff_time_index++;
+                else diff_time_index = 0;
+                job_delay_time = diffTimes[diff_time_index][1];
+
+                return;
+            }
         }
         
         // Gameplay controls
         if (!control_enabled) return;        
+        firstClick = true;
         let screenCenterX = screenWidth / 2;
 
-        player_img.state = player_img.swing;
+        // When click happens after gameStarted
+        player_img.state = player_img.stance;
         if (p_x > screenCenterX){
             isPlayerRight = true;
+            atk_offset = 12;
         } else {
             isPlayerRight = false;
+            atk_offset = 12;
         }
         log_queue.enqueue(Math.floor(Math.random() * 2));
         log_queue.dequeue();
@@ -134,7 +159,8 @@ const update = (dt) => {
         }
         else {
             score++;
-            job_delay = 2;
+            job_delay = job_delay_time;
+            console.log(job_delay_time);
         }
     }
 
@@ -143,23 +169,35 @@ const update = (dt) => {
         start_delay -= dt;
         control_enabled = false;
     }
-    else if (start_delay <= 0) control_enabled = true;
+    else if (start_delay <= 0 && gameStarted) control_enabled = true;
 
     // Job delay
     if (gameStarted && job_delay >= 0 && start_delay <= 0) {
         job_delay -= dt;
     }
+    if (job_delay <= 0){
+        player_img.state = player_img.stance;
+    }
 
     if (!pointer_down) {
         initial_down = false;
+    }
+
+    // Slide anim after atk
+    if (atk_offset > 0){
+        atk_offset -= (dt * 100);
+    } else if (firstClick && job_delay > 0) {
+        player_img.state = player_img.swing;
     }
 }
 
 // Main draw method
 const draw = (dt) => {
     // Background
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "#82C8E5";
     ctx.fillRect(0, 0, screenWidth, screenHeight);
+    ctx.fillStyle = "#c2913a";
+    ctx.fillRect(0, screenHeight * 0.94, screenWidth, screenHeight * 0.06);
 
     if (gameStarted) {
         // Calculate the center of logs in screen
@@ -197,12 +235,12 @@ const draw = (dt) => {
         // Draw player stuffs
         // Set the offset depending on the 'isPlayerRight' variable.
         if (isPlayerRight) {
-            player_rect.x = playerCenterX + 50;
+            player_rect.x = (playerCenterX + 50) + atk_offset;
 
             ctx.drawImage(player_img.state, player_rect.x, player_rect.y, player_rect.width, player_rect.height);
         }
         else {
-            player_rect.x = playerCenterX - 50;
+            player_rect.x = (playerCenterX - 50) - atk_offset;
             ctx.save()
             ctx.scale(-1, 1);
 
@@ -214,13 +252,14 @@ const draw = (dt) => {
     else {
         // Render play button
         playBtn.display(ctx);
-        difficultyBtn.display(ctx);
+        difficultyBtn.display(ctx, diffTimes[diff_time_index][2]);
+        difficultyBtn.text = diffTimes[diff_time_index][0];
 
         // Difficulty text
         ctx.fillStyle = "black";
         ctx.font = "bold 25px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("Difficulty:", (screenWidth/2)-100, 465);
+        ctx.fillText("Difficulty:", (screenWidth/2)-100, 480);
 
         // Score display
         ctx.fillStyle = "black";
@@ -231,10 +270,10 @@ const draw = (dt) => {
 
         // Status display
         ctx.fillStyle = "red";
-        ctx.font = "bold 30px Arial";
+        ctx.font = `bold ${screenWidth * 0.03}px Arial`;
         ctx.textAlign = "center";
 
-        ctx.fillText(failed_status, screenWidth/2, 700);
+        ctx.fillText(failed_status, screenWidth/2, 100);
     }
 
     if (start_delay >= 0 && gameStarted) {

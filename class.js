@@ -61,7 +61,7 @@ export class Button {
         this.text = text;
     }
 
-    display (ctx) {
+    display (ctx, offset_x = 70) {
         ctx.fillStyle = "#c9c9c9";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 6;
@@ -73,6 +73,6 @@ export class Button {
         ctx.strokeStyle = "black";
         ctx.textAlign = "center";
 
-        ctx.fillText(this.text, this.rect.x + 70, this.rect.y + (this.rect.height - 30));
+        ctx.fillText(this.text, this.rect.x + offset_x, this.rect.y + (this.rect.height - 30));
     }
 } 
