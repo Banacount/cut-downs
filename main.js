@@ -45,6 +45,7 @@ let start_delay = 3;
 let job_delay = 0.6;
 // Structure [Title, Delay, Offset]
 const diffTimes = [
+    ['TUTORIAL', 10, 110],
     ['DANG EASY', 1, 125],
     ['EASY', 0.7, 70],
     ['MEDIUM', 0.5, 100],
@@ -276,6 +277,16 @@ const draw = (dt) => {
                                         (screenHeight - 900) + tree_offset, 
                                         884 * 0.8, 
                                         489 * 0.8);
+
+        // Score display
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black"
+        ctx.font = "bold 80px Arial";
+        ctx.textAlign = "center";
+        ctx.lineWidth = 5;
+
+        ctx.strokeText(`${score}`, screenWidth / 2, 120);
+        ctx.fillText(`${score}`, screenWidth / 2, 120);
     } 
     // Game Menu
     else {
