@@ -9,6 +9,7 @@ Valmoria: Explain how the algorithm is implemented in game and further dive in t
 /** @type {HTMLCanvasElement} */
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
+const DIFFICULT_SAVE_KEY = "difficult_save_key";
 
 // Assets
 const player_img = {
@@ -52,7 +53,7 @@ const diffTimes = [
     ['HARD', 0.25, 70],
     ['ROCKSTAR', 0.15, 120],
 ];
-let diff_time_index = 1; 
+let diff_time_index = 0; 
 let job_delay_time = diffTimes[diff_time_index][1];
 
 // Controls properties
@@ -124,8 +125,10 @@ const update = (dt) => {
                 return;
             }
             if (difficultyBtnRect.collidePoint(mouseX, mouseY)) {
-                if (diff_time_index <= 3) diff_time_index++;
+                if (diff_time_index < diffTimes.length-1) diff_time_index++;
                 else diff_time_index = 0;
+                localStorage.setItem(DIFFICULT_SAVE_KEY, diff_time_index);
+
                 job_delay_time = diffTimes[diff_time_index][1];
 
                 return;
@@ -334,6 +337,23 @@ const loop = (timestamp) => {
     requestAnimationFrame(loop);
 }
 
+// Difficulty initialize
+let diff_save = localStorage.getItem(DIFFICULT_SAVE_KEY);
+if (diff_save == undefined) {
+    localStorage.setItem(DIFFICULT_SAVE_KEY, 0);
+
+    diff_save = localStorage.getItem(DIFFICULT_SAVE_KEY);
+    if (diff_save < diffTimes.length-1) diff_time_index = 0;
+    else diff_time_index = localStorage.getItem(DIFFICULT_SAVE_KEY);
+
+    job_delay_time = diffTimes[diff_time_index][1];
+} else {
+    if (diff_save < diffTimes.length-1) diff_time_index = 0;
+    else diff_time_index = localStorage.getItem(DIFFICULT_SAVE_KEY);
+
+    job_delay_time = diffTimes[diff_time_index][1];
+}
+
 requestAnimationFrame(loop)
 
 // Pointer events
@@ -381,6 +401,5 @@ for (let i = 0; i < log_size; i++) {
     if (i > 0) log_queue.enqueue(Math.floor(Math.random() * 2));
     else log_queue.enqueue(1);
 }
-
 
 console.log(log_queue.list);
