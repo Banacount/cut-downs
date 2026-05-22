@@ -10,6 +10,7 @@ Valmoria: Explain how the algorithm is implemented in game and further dive in t
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d");
 const DIFFICULT_SAVE_KEY = "difficult_save_key";
+const HIGHEST_SCORE_KEY = "highest_score_key";
 
 // Assets
 const player_img = {
@@ -32,18 +33,6 @@ trees_img.treeType2.src = "./wood-2.png";
 trees_img.branch.src = "./branch.png";
 trees_img.leaves.src = "./tree-leaves.png";
 
-// Game properties
-let log_queue = new Queue();
-let gameStarted = false;
-let score = 0;
-let control_enabled = false;
-let firstClick = false;
-let failed_status = "";
-
-// Times ( for delays )
-let time_elapsed = 0;
-let start_delay = 3;
-let job_delay = 0.6;
 // Structure [Title, Delay, Offset]
 const diffTimes = [
     ['TUTORIAL', 10, 110],
@@ -53,6 +42,19 @@ const diffTimes = [
     ['HARD', 0.25, 70],
     ['ROCKSTAR', 0.15, 120],
 ];
+// Game properties
+let log_queue = new Queue();
+let gameStarted = false;
+let score = new Array(diffTimes.length);
+let highscore_array = new Array(diffTimes.length);
+let control_enabled = false;
+let firstClick = false;
+let failed_status = "";
+
+// Times ( for delays )
+let time_elapsed = 0;
+let start_delay = 3;
+let job_delay = 0.6;
 let diff_time_index = 0; 
 let job_delay_time = diffTimes[diff_time_index][1];
 
@@ -72,6 +74,7 @@ let log_size = 7;
 // Player properties
 let player_rect = new Rect(0, 0, 120, 100);
 let isPlayerRight = false;
+let newHigh = false;
 
 // Menu state
 const playBtnRect = new Rect(20, 350, 320, 80);
@@ -84,9 +87,15 @@ const defeat = () => {
     gameStarted = false;
     control_enabled = false;
     firstClick = false;
+
+    if (highscore_array[diff_time_index] < score[diff_time_index]) {
+        highscore_array[diff_time_index] = score[diff_time_index];
+        localStorage.setItem(HIGHEST_SCORE_KEY, JSON.stringify(highscore_array));
+        newHigh = true;
+    }
 }
 const start = () => {
-    score = 0;
+    score[diff_time_index] = 0;
     start_delay = 3;
     job_delay = 2;
 
@@ -99,6 +108,7 @@ const start = () => {
     player_img.state = player_img.stance;
     isPlayerRight = false;
     gameStarted = true;
+    newHigh = false;
 
 }
 
@@ -130,6 +140,7 @@ const update = (dt) => {
                 localStorage.setItem(DIFFICULT_SAVE_KEY, diff_time_index);
 
                 job_delay_time = diffTimes[diff_time_index][1];
+                newHigh = false;
 
                 return;
             }
@@ -169,18 +180,18 @@ const update = (dt) => {
         // Detect if player got hit
         if (log_queue.peak() == 1 && isPlayerRight) {
             defeat();
-            failed_status = "You got hit by trunk! tough luck."
+            failed_status = "You got hit by trunk! tough luck.";
         }
         else if (log_queue.peak() == 0 && !isPlayerRight) {
             defeat();
-            failed_status = "You got hit by trunk! tough luck."
+            failed_status = "You got hit by trunk! tough luck.";
         }
         else if (job_delay <= 0){
             defeat();
-            failed_status = "Too slow. You're fired!"
+            failed_status = "Too slow. You're fired!";
         }
         else {
-            score++;
+            score[diff_time_index]++;
             job_delay = job_delay_time;
             console.log(job_delay_time);
         }
@@ -281,15 +292,15 @@ const draw = (dt) => {
                                         884 * 0.8, 
                                         489 * 0.8);
 
-        // Score display
+        // Score display (while in game)
         ctx.fillStyle = "white";
         ctx.strokeStyle = "black"
         ctx.font = "bold 80px Arial";
         ctx.textAlign = "center";
         ctx.lineWidth = 5;
 
-        ctx.strokeText(`${score}`, screenWidth / 2, 120);
-        ctx.fillText(`${score}`, screenWidth / 2, 120);
+        ctx.strokeText(`${score[diff_time_index] || "0"}`, screenWidth / 2, 120);
+        ctx.fillText(`${score[diff_time_index] || "0"}`, screenWidth / 2, 120);
     } 
     // Game Menu
     else {
@@ -309,7 +320,9 @@ const draw = (dt) => {
         ctx.font = "bold 50px Arial";
         ctx.textAlign = "center";
 
-        ctx.fillText(`Score: ${score}`, (screenWidth/2), 200);
+        ctx.fillText(`${newHigh ? "New High " : ""}Score: ${score[diff_time_index] || "None"}`, (screenWidth/2), 200);
+        ctx.font = "bold 20px Arial";
+        ctx.fillText(`Highest score: ${highscore_array[diff_time_index] || "None"}`, (screenWidth/2), 230);
 
         // Status display
         ctx.fillStyle = "red";
@@ -337,8 +350,10 @@ const loop = (timestamp) => {
     requestAnimationFrame(loop);
 }
 
-// Difficulty initialize
+// Difficulty and saved highscore initialize
 let diff_save = localStorage.getItem(DIFFICULT_SAVE_KEY);
+let highscore_save = localStorage.getItem(HIGHEST_SCORE_KEY);
+
 if (diff_save == undefined) {
     localStorage.setItem(DIFFICULT_SAVE_KEY, 0);
 
@@ -352,6 +367,13 @@ if (diff_save == undefined) {
     else diff_time_index = localStorage.getItem(DIFFICULT_SAVE_KEY);
 
     job_delay_time = diffTimes[diff_time_index][1];
+}
+// highscore
+if (highscore_save == undefined) {
+    localStorage.setItem(HIGHEST_SCORE_KEY, JSON.stringify(highscore_array));
+} else {
+    let highscore_save = JSON.parse(localStorage.getItem(HIGHEST_SCORE_KEY));
+    highscore_array = highscore_save;
 }
 
 requestAnimationFrame(loop)
