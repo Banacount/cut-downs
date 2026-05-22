@@ -35,12 +35,12 @@ trees_img.leaves.src = "./tree-leaves.png";
 
 // Structure [Title, Delay, Offset]
 const diffTimes = [
-    ['TUTORIAL', 10, 110],
-    ['DANG EASY', 1, 125],
-    ['EASY', 0.7, 70],
-    ['MEDIUM', 0.5, 100],
-    ['HARD', 0.25, 70],
-    ['ROCKSTAR', 0.15, 120],
+    ['TUTORIAL(10s)', 10, 150],
+    ['DANG EASY(1s)', 1, 150],
+    ['EASY(0.7s)', 0.7, 120],
+    ['MEDIUM(0.5s)', 0.5, 140],
+    ['HARD(0.25s)', 0.25, 125],
+    ['ROCKSTAR(0.15s)', 0.15, 170],
 ];
 // Game properties
 let log_queue = new Queue();
@@ -358,12 +358,18 @@ if (diff_save == undefined) {
     localStorage.setItem(DIFFICULT_SAVE_KEY, 0);
 
     diff_save = localStorage.getItem(DIFFICULT_SAVE_KEY);
-    if (diff_save < diffTimes.length-1) diff_time_index = 0;
+    if (diff_save > diffTimes.length-1) {
+        diff_time_index = 0;
+        localStorage.setItem(DIFFICULT_SAVE_KEY, diff_time_index);
+    }
     else diff_time_index = localStorage.getItem(DIFFICULT_SAVE_KEY);
 
     job_delay_time = diffTimes[diff_time_index][1];
 } else {
-    if (diff_save < diffTimes.length-1) diff_time_index = 0;
+    if (diff_save > diffTimes.length-1) {
+        diff_time_index = 0;
+        localStorage.setItem(DIFFICULT_SAVE_KEY, diff_time_index);
+    }
     else diff_time_index = localStorage.getItem(DIFFICULT_SAVE_KEY);
 
     job_delay_time = diffTimes[diff_time_index][1];

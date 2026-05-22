@@ -69,7 +69,7 @@ export class Button {
         ctx.strokeRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 
         ctx.fillStyle = "black";
-        ctx.font = "bold 36px Arial";
+        ctx.font = "bold 32px Arial";
         ctx.strokeStyle = "black";
         ctx.textAlign = "center";
 
